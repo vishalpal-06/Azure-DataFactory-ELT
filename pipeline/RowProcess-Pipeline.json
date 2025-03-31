@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Row Metadata",
+				"name": "Get Row Match Metadata",
 				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
@@ -37,7 +37,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Get Row Metadata",
+						"activity": "Get Row Match Metadata",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -46,12 +46,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Row Metadata').output.childItems",
+						"value": "@activity('Get Row Match Metadata').output.childItems",
 						"type": "Expression"
 					},
 					"activities": [
 						{
-							"name": "Copy-Row-Data",
+							"name": "CopyRowMatchData",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -114,11 +114,11 @@
 							]
 						},
 						{
-							"name": "DeleteRowFiles",
+							"name": "DeleteRowMatchFiles",
 							"type": "Delete",
 							"dependsOn": [
 								{
-									"activity": "Copy-Row-Data",
+									"activity": "CopyRowMatchData",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -135,6 +135,162 @@
 							"typeProperties": {
 								"dataset": {
 									"referenceName": "RowMatchData",
+									"type": "DatasetReference"
+								},
+								"logStorageSettings": {
+									"linkedServiceName": {
+										"referenceName": "Row_linked_service",
+										"type": "LinkedServiceReference"
+									},
+									"path": "rowdatalog"
+								},
+								"enableLogging": true,
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false,
+									"prefix": {
+										"value": "@item().name",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Get Row Delivery Metadata",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "RowDeliveryDataset",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "ReadSilverFiles",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Row Delivery Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Row Delivery Metadata').output.childItems",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "CopyRowDeliveryData",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false,
+										"prefix": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings",
+										"copyBehavior": "MergeFiles"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".csv"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "RowDeliveryDataset",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "SilverDeliveryDataset",
+									"type": "DatasetReference"
+								}
+							]
+						},
+						{
+							"name": "DeleteRowDeliveryFile",
+							"type": "Delete",
+							"dependsOn": [
+								{
+									"activity": "CopyRowDeliveryData",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "RowDeliveryDataset",
 									"type": "DatasetReference"
 								},
 								"logStorageSettings": {

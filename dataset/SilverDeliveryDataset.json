@@ -1,5 +1,5 @@
 {
-	"name": "SilverMatchData",
+	"name": "SilverDeliveryDataset",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "Silver_linked_service",
@@ -11,10 +11,10 @@
 			"location": {
 				"type": "AzureBlobStorageLocation",
 				"fileName": {
-					"value": "@concat('Match', formatDateTime(utcnow(), 'yyyyMMdd_HHmmss'))",
+					"value": "@concat('Delivery', formatDateTime(utcnow(), 'yyyyMMdd_HHmmss'))",
 					"type": "Expression"
 				},
-				"container": "silvermatchcontainer"
+				"container": "silverdeliverycontainer"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
