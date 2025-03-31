@@ -118,7 +118,7 @@
 							"type": "Delete",
 							"dependsOn": [
 								{
-									"activity": "CopyRowMatchData",
+									"activity": "WaitForDeleteMatch",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -155,6 +155,22 @@
 									}
 								}
 							}
+						},
+						{
+							"name": "WaitForDeleteMatch",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "CopyRowMatchData",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 60
+							}
 						}
 					]
 				}
@@ -181,6 +197,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -274,7 +291,7 @@
 							"type": "Delete",
 							"dependsOn": [
 								{
-									"activity": "CopyRowDeliveryData",
+									"activity": "WaitForDeleteDelivery",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -310,6 +327,22 @@
 										"type": "Expression"
 									}
 								}
+							}
+						},
+						{
+							"name": "WaitForDeleteDelivery",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "CopyRowDeliveryData",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 60
 							}
 						}
 					]
